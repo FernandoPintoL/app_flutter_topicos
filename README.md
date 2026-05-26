@@ -1,17 +1,73 @@
-# flutter_app
+# Flutter App - Sistema IA Gestión de Ventas
 
-A new Flutter project.
+## 🎯 Resumen Rápido
 
-## Getting Started
+App Flutter **minimalista** que conecta con tu API IA para procesar comandos de texto y mostrar respuestas JSON.
 
-This project is a starting point for a Flutter application.
+## ✨ Características
 
-A few resources to get you started if this is your first Flutter project:
+- ✅ Input de texto (3 líneas)
+- ✅ Botón Enviar
+- ✅ Botón Audio (placeholder)
+- ✅ Mostrar respuesta JSON formateada
+- ✅ State Management con Provider
+- ✅ Manejo de errores
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## 🚀 Instalación Rápida
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 1. Instalar dependencias
+```bash
+cd D:\Topicos\app_flutter
+flutter pub get
+```
+
+### 2. Configurar IP
+Edita `lib/services/api_client.dart`:
+```dart
+static const String baseUrl = 'http://192.168.100.24:8000';
+```
+
+Obtén tu IP:
+```powershell
+ipconfig | Select-String "IPv4"
+```
+
+### 3. Android - HTTP
+Edita `android/app/src/main/AndroidManifest.xml`:
+```xml
+<application android:usesCleartextTraffic="true">
+```
+
+### 4. Ejecutar
+```bash
+flutter run
+```
+
+## 📝 Ejemplo de Uso
+
+Ingresa: `Crea un cliente llamado Sofia con cedula 55555555`
+
+Presiona: Enviar
+
+Ver respuesta JSON en pantalla
+
+## 📂 Estructura
+
+```
+lib/
+├── main.dart
+├── models/api_response.dart
+├── services/api_client.dart
+├── controllers/home_controller.dart
+└── screens/home_screen.dart
+```
+
+## 📚 Documentación
+
+- `SETUP.md` - Instalación detallada
+- `ESTRUCTURA.md` - Explicación de archivos
+- `COMANDOS_PRUEBA.md` - Comandos de ejemplo
+
+---
+
+**App lista para usar** ✅

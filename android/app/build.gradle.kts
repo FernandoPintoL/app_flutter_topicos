@@ -28,6 +28,26 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Configuración para llama.cpp JNI (solo arm64-v8a para compatibilidad)
+        ndk {
+            abiFilters.clear()
+            abiFilters.add("arm64-v8a")
+        }
+
+        externalNativeBuild {
+            cmake {
+                cppFlags.add("-std=c++17")
+                arguments.add("-DANDROID_STL=c++_shared")
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     buildTypes {

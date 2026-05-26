@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter build *)",
+      "Bash(flutter pub *)",
+      "Bash(timeout 120 flutter run)",
+      "Bash(gradlew assembleDebug -x lint --stacktrace)",
+      "Bash(flutter run *)",
+      "Bash(tee /tmp/build.log)",
+      "Read(//tmp/**)",
+      "Bash(adb shell *)",
+      "Bash(adb logcat *)",
+      "Bash(flutter clean *)",
+      "Bash(tee /tmp/flutter_build.log)",
+      "Bash(echo \"Build started in background, PID: $!\")",
+      "Bash(adb devices *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(adb -s ARGKUT3106002407 shell pidof com.example.flutter_app)",
+      "Bash(npm run *)",
+      "PowerShell(adb devices *)",
+      "PowerShell(adb shell *)",
+      "PowerShell(flutter run *)",
+      "PowerShell(if \\(\\(Test-Path \"C:\\\\Users\\\\Fpl\\\\AppData\\\\Local\\\\Temp\\\\flutter_build.log\"\\)\\) { Get-Content \"C:\\\\Users\\\\Fpl\\\\AppData\\\\Local\\\\Temp\\\\flutter_build.log\" | Select-String -Pattern \"Running|Compiling|assembled|deployed|error\" | Select-Object -Last 20 } else { \"Build log not found - build might still be running\" })",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:8080/health\" -ErrorAction SilentlyContinue | Select-Object StatusCode, Content)",
+      "PowerShell(curl.exe -s \"http://localhost:8080/health\" 2>&1 | Select-Object -First 10)",
+      "PowerShell(Get-Item d:\\\\Topicos\\\\gestorVentas-api\\\\dist -ErrorAction SilentlyContinue | ForEach-Object { \"dist folder exists, last modified: \" + $_.LastWriteTime })",
+      "PowerShell(Get-Process *)",
+      "Bash(curl -X POST http://localhost:8080/auth/login -H 'Content-Type: application/json' -d '{\"email_or_username\": \"admin\", \"password\": \"Admin123!\", \"platform\": \"mobile\"}')",
+      "PowerShell(netstat *)",
+      "PowerShell(netsh advfirewall *)",
+      "Bash(Write-Host)",
+      "Bash(flutter analyze *)",
+      "PowerShell(Get-ChildItem 'd:\\\\Topicos\\\\app_flutter\\\\assets\\\\models\\\\' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName, $_.Length }; if \\($null -eq \\(Get-Item 'd:\\\\Topicos\\\\app_flutter\\\\assets\\\\models\\\\' -ErrorAction SilentlyContinue\\)\\) { Write-Host \"Directorio no existe\" })",
+      "PowerShell(Test-Path 'd:\\\\Topicos\\\\app_flutter\\\\assets\\\\models\\\\qwen2.5-3b-instruct-q4_k_m.gguf' ; if \\(Test-Path 'd:\\\\Topicos\\\\app_flutter\\\\assets\\\\models\\\\qwen2.5-3b-instruct-q4_k_m.gguf'\\) { Get-Item 'd:\\\\Topicos\\\\app_flutter\\\\assets\\\\models\\\\qwen2.5-3b-instruct-q4_k_m.gguf' | Select-Object FullName, @{Name=\"TamañoGB\";Expression={[math]::Round\\($_.Length/1GB, 2\\)}} } else { Write-Host \"Archivo NO existe\" })",
+      "Bash(grep -E \"\\\\.\\(dart|kt\\)$\")",
+      "WebSearch"
+    ]
+  }
+}
