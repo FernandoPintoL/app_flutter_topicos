@@ -30,6 +30,13 @@ class ApiAgent {
         headers[_authorizationHeader] = 'Bearer $_token';
       }
 
+      print('\n[ApiAgent] 📤 REQUEST INICIADO');
+      print('[ApiAgent] Method: $method');
+      print('[ApiAgent] URL: $url');
+      if (body != null) {
+        print('[ApiAgent] Body: ${jsonEncode(body)}');
+      }
+
       http.Response response;
 
       switch (method.toUpperCase()) {
@@ -56,6 +63,15 @@ class ApiAgent {
               )
               .timeout(_defaultTimeout);
           break;
+        case 'PATCH':
+          response = await http
+              .patch(
+                url,
+                headers: headers,
+                body: body != null ? jsonEncode(body) : null,
+              )
+              .timeout(_defaultTimeout);
+          break;
         case 'DELETE':
           response = await http
               .delete(url, headers: headers)
@@ -68,7 +84,11 @@ class ApiAgent {
           };
       }
 
+      print('[ApiAgent] Status Code: ${response.statusCode}');
+      print('[ApiAgent] Response Body: ${response.body}');
+
       if (response.statusCode == 401) {
+        print('[ApiAgent] ❌ No autorizado (401)');
         clearToken();
         return {
           'success': false,
@@ -79,6 +99,7 @@ class ApiAgent {
       final decoded = jsonDecode(response.body);
 
       if (response.statusCode >= 400) {
+        print('[ApiAgent] ❌ Error HTTP ${response.statusCode}');
         if (decoded is Map<String, dynamic>) {
           return {
             'success': false,
@@ -92,6 +113,8 @@ class ApiAgent {
           };
         }
       }
+
+      print('[ApiAgent] ✅ Solicitud exitosa\n');
 
       if (decoded is Map<String, dynamic>) {
         return decoded;
@@ -107,6 +130,7 @@ class ApiAgent {
         };
       }
     } catch (e) {
+      print('[ApiAgent] ❌ Exception: $e\n');
       return {
         'success': false,
         'error': e.toString(),

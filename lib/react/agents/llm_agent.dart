@@ -170,7 +170,46 @@ class LLMAgent {
           print('[LLMAgent] ⚠️  Eliminando tokens después de <|endoftext|>');
         }
 
+        // Limpiar caracteres basura como |>, #, etc. que rompen el JSON
+        cleanResult = cleanResult.replaceAll(RegExp(r'[|>#]+$'), '').trim();
+
+        // Encontrar el primer { y el último } válido
+        int firstBrace = cleanResult.indexOf('{');
+        int lastBrace = cleanResult.lastIndexOf('}');
+        if (firstBrace >= 0 && lastBrace > firstBrace) {
+          cleanResult = cleanResult.substring(firstBrace, lastBrace + 1);
+          print('[LLMAgent] 🧹 Limpiado: extrayendo JSON entre primeras { y últimas }');
+        }
+
         print('[LLMAgent] Respuesta bruta: $cleanResult');
+
+        // Detectar y eliminar secuencias largas de caracteres repetidos (modelo pegado)
+        String processedResult = cleanResult;
+
+        // Buscar patrones de repetición: 0000, 1111, etc. o cualquier char 5+ veces
+        RegExp repeatedChars = RegExp(r'(.)\1{4,}');
+        var match = repeatedChars.firstMatch(processedResult);
+        if (match != null) {
+          print('[LLMAgent] ⚠️  Detectada secuencia repetida: "${match.group(0)}" en posición ${match.start}');
+          print('[LLMAgent] Truncando respuesta en ese punto...');
+          processedResult = processedResult.substring(0, match.start);
+        }
+
+        // También buscar patrones problemáticos: cantidad, descripcion, notas (que no deberían estar en producto)
+        if (processedResult.contains('"cantidad"')) {
+          print('[LLMAgent] ⚠️  Campo "cantidad" detectado en respuesta (no permitido para producto)');
+          // Truncar antes de "cantidad"
+          int quantityIndex = processedResult.indexOf('"cantidad"');
+          if (quantityIndex > 0) {
+            // Encontrar el último "," o ":" válido antes de cantidad
+            String beforeQuantity = processedResult.substring(0, quantityIndex);
+            int lastCommaIndex = beforeQuantity.lastIndexOf(',');
+            if (lastCommaIndex > 0) {
+              processedResult = beforeQuantity.substring(0, lastCommaIndex) + '}}}';
+              print('[LLMAgent] Truncado antes de "cantidad", cerrando JSON correctamente');
+            }
+          }
+        }
 
         // Extraer múltiples JSONs válidos
         String? jsonStr;
@@ -178,14 +217,14 @@ class LLMAgent {
         int startIdx = -1;
         List<String> jsonObjects = [];
 
-        for (int i = 0; i < cleanResult.length; i++) {
-          if (cleanResult[i] == '{') {
+        for (int i = 0; i < processedResult.length; i++) {
+          if (processedResult[i] == '{') {
             if (braceCount == 0) startIdx = i;
             braceCount++;
-          } else if (cleanResult[i] == '}') {
+          } else if (processedResult[i] == '}') {
             braceCount--;
             if (braceCount == 0 && startIdx != -1) {
-              String obj = cleanResult.substring(startIdx, i + 1);
+              String obj = processedResult.substring(startIdx, i + 1);
               jsonObjects.add(obj);
               startIdx = -1;
             }
@@ -198,13 +237,47 @@ class LLMAgent {
           print('[LLMAgent] 📋 Multi-intent detectado: ${jsonObjects.length} objetos JSON encontrados');
         } else if (jsonObjects.length == 1) {
           jsonStr = jsonObjects.first;
+        } else {
+          // Fallback: Si no se extrajeron JSONs válidos, intentar parsear processedResult directamente
+          print('[LLMAgent] ⚠️  No se extrajeron JSONs con búsqueda de llaves, intentando parsear processedResult directamente...');
+          jsonStr = processedResult;
         }
 
         if (jsonStr != null && jsonStr.isNotEmpty) {
           try {
+            // Limpiar caracteres de control y no imprimibles
+            jsonStr = jsonStr.replaceAll(RegExp(r'[\p{Cc}\p{Cn}]+', unicode: true), '');
+            // Eliminar caracteres nulos específicamente
+            jsonStr = jsonStr.replaceAll(' ', '');
+            // Limpiar espacios en blanco problemáticos
+            jsonStr = jsonStr.replaceAll(RegExp(r'[\r\n\t]+'), ' ').trim();
             print('[LLMAgent] ✓ JSON extraído: $jsonStr');
 
-            final parsed = json_lib.jsonDecode(jsonStr);
+            dynamic parsed;
+            try {
+              parsed = json_lib.jsonDecode(jsonStr);
+            } catch (e) {
+              // Si el parsing falla, intenta limpieza más agresiva
+              print('[LLMAgent] ⚠️  Primer intento falló, aplicando limpieza agresiva...');
+
+              // Convertir a códigos de carácter, filtrar inválidos, convertir de vuelta
+              List<int> codeUnits = jsonStr.codeUnits;
+              List<int> cleaned = [];
+
+              for (int code in codeUnits) {
+                // Mantener: ASCII imprimible (32-126) + JSON quotes (34) + básico UTF-8 (128+)
+                if ((code >= 32 && code <= 126) || (code >= 128)) {
+                  cleaned.add(code);
+                } else if (code == 10 || code == 13 || code == 9) {
+                  // Mantener newlines y tabs como espacios
+                  cleaned.add(32);
+                }
+              }
+
+              jsonStr = String.fromCharCodes(cleaned).trim();
+              print('[LLMAgent] Reintentando con limpieza agresiva: $jsonStr');
+              parsed = json_lib.jsonDecode(jsonStr);
+            }
             print('[LLMAgent] ✓ JSON decodificado');
 
             // Parsear como lista o single object
@@ -259,6 +332,18 @@ class LLMAgent {
           }
         } else {
           print('[LLMAgent] ❌ No se encontró JSON válido en la respuesta');
+          print('[LLMAgent] Respuesta procesada: $processedResult');
+          return CommandIntentList(
+            intents: [
+              CommandIntent(
+                intent: 'desconocido',
+                entityType: null,
+                action: null,
+                confidence: 0.0,
+                error: 'No se encontró JSON válido en la respuesta del modelo',
+              ),
+            ],
+          );
         }
       }
 

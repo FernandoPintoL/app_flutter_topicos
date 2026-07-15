@@ -19,7 +19,7 @@ class EnvConfig {
     int.parse(dotenv.env['LLM_N_THREADS'] ?? '4');
 
   static int get llmMaxTokens =>
-    int.parse(dotenv.env['LLM_MAX_TOKENS'] ?? '150');
+    int.parse(dotenv.env['LLM_MAX_TOKENS'] ?? '256');
 
   static double get llmTemperature =>
     double.parse(dotenv.env['LLM_TEMPERATURE'] ?? '0.1');
